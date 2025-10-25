@@ -2,20 +2,20 @@
 version: '3.9'
 
 services:
-  mongodb:
-    image: mongo:7
-    container_name: myboard-mongo
-    restart: always
-    ports:
-      - '27017:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - myboard-network
+  # mongodb:
+  #   image: mongo:7
+  #   container_name: myboard-mongo
+  #   restart: always
+  #   ports:
+  #     - '27017:27017'
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+  #     MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   networks:
+  #     - myboard-network
 
   backend:
     build:
