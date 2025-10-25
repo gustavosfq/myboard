@@ -1,0 +1,52 @@
+
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: myboard-mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - myboard-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myboard-backend
+    restart: always
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - myboard-network
+    command: npm run start:dev
+
+volumes:
+  mongodb_data:
+
+networks:
+  myboard-network:
+    driver: bridge
