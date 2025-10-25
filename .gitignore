@@ -38,6 +38,11 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+.env.prod
+
+# Production secrets
+docker-compose.override.yml
+ssl/
 
 # Temp
 temp/

@@ -1,0 +1,51 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: myboard-backend-prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # MongoDB externo - ya instalado en el servidor
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+    # Labels para Dokploy/Traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.myboard-backend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.myboard-backend.entrypoints=websecure"
+      - "traefik.http.routers.myboard-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.myboard-backend.loadbalancer.server.port=3001"
+      # WebSocket support
+      - "traefik.http.routers.myboard-backend.middlewares=websocket-headers"
+      - "traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Connection=upgrade"
+      - "traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Upgrade=websocket"
+    # Healthcheck para Dokploy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/auth/test"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
