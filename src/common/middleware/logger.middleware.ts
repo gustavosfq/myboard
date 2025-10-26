@@ -38,7 +38,40 @@ export class LoggerMiddleware implements NestMiddleware {
 
       // Log additional details for errors
       if (statusCode >= 400) {
-        this.logger.error(`❌ Error details - IP: ${ip} - UserAgent: ${userAgent}`);
+        if (res.statusCode >= 400) {
+      // Obtener información adicional del error si está disponible
+      const errorInfo = (req as any).errorInfo || {};
+      const errorMessage = errorInfo.message || 'Unknown error';
+      const errorStack = errorInfo.stack || 'No stack trace available';
+      const errorName = errorInfo.name || 'Error';
+      
+      this.logger.error(
+        `❌ Error details - IP: ${ip} - UserAgent: ${userAgent}`,
+      );
+      this.logger.error(
+        `❌ Error Type: ${errorName} - Message: ${errorMessage}`,
+      );
+      
+      // En desarrollo, mostrar el stack trace completo
+      if (process.env.NODE_ENV !== 'production') {
+        this.logger.error(`❌ Stack Trace: ${errorStack}`);
+      } else {
+        // En producción, mostrar solo las primeras líneas del stack
+        const stackLines = errorStack.split('\n').slice(0, 3).join('\n');
+        this.logger.error(`❌ Stack (partial): ${stackLines}`);
+      }
+      
+      // Información adicional del request que causó el error
+      this.logger.error(
+        `❌ Request Body: ${JSON.stringify((req as any).body || {}).substring(0, 500)}`,
+      );
+      this.logger.error(
+        `❌ Query Params: ${JSON.stringify(req.query || {})}`,
+      );
+      this.logger.error(
+        `❌ Route Params: ${JSON.stringify(req.params || {})}`,
+      );
+    }
       }
     });
 

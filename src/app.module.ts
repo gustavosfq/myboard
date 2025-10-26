@@ -2,7 +2,7 @@ import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { BoardsModule } from './boards/boards.module';
@@ -10,6 +10,7 @@ import { PostitsModule } from './postits/postits.module';
 import { BoardGateway } from './gateway/board.gateway';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
   imports: [
@@ -44,6 +45,10 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
     },
   ],
 })
