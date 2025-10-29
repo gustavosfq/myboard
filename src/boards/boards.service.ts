@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Board, BoardDocument } from './schemas/board.schema';
+import { Postit, PostitDocument } from '../postits/schemas/postit.schema';
 import { CreateBoardDto, ShareBoardDto } from './dto/board.dto';
 
 @Injectable()
 export class BoardsService {
-  constructor(@InjectModel(Board.name) private boardModel: Model<BoardDocument>) {}
+  private readonly logger = new Logger('BoardsService');
+
+  constructor(
+    @InjectModel(Board.name) private boardModel: Model<BoardDocument>,
+    @InjectModel(Postit.name) private postitModel: Model<PostitDocument>
+  ) {}
 
   async create(createBoardDto: CreateBoardDto, userId: string): Promise<Board> {
     const board = new this.boardModel({
@@ -44,7 +50,7 @@ export class BoardsService {
     // Check if user has access
     const userObjectId = new Types.ObjectId(userId);
     const hasAccess =
-      board.owner.toString() === userId ||
+      board.owner._id.toString() == userId ||
       board.sharedWith.some((id) => id.toString() === userId);
 
     if (!hasAccess) {
@@ -98,6 +104,35 @@ export class BoardsService {
 
     board.isActive = false;
     await board.save();
+  }
+
+  async getBoardWithPostits(id: string, userId: string): Promise<{ board: Board; postits: Postit[] }> {
+    this.logger.log(`📋 Getting board with post-its - Board ID: ${id}, User: ${userId}`);
+    
+    try {
+      // Verificar acceso al board
+      const board = await this.findOne(id, userId);
+      
+      // Obtener todos los post-its del board
+      const postits = await this.postitModel
+        .find({ 
+          board: new Types.ObjectId(id),
+          isActive: true 
+        })
+        .populate('author', 'name email picture')
+        .sort({ zIndex: 1 }) // Ordenar por z-index para el canvas
+        .exec();
+
+      this.logger.log(`✅ Found ${postits.length} post-its for board: ${id}`);
+      
+      return {
+        board,
+        postits
+      };
+    } catch (error) {
+      this.logger.error(`❌ Failed to get board with post-its: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async checkAccess(boardId: string, userId: string): Promise<boolean> {

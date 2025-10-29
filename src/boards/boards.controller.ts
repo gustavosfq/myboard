@@ -111,6 +111,57 @@ export class BoardsController {
     return this.boardsService.findOne(id, req.user.userId);
   }
 
+  @Get(':id/canvas')
+  @ApiOperation({
+    summary: 'Obtener tablero con post-its para canvas',
+    description: 'Obtiene un tablero con todos sus post-its para renderizar en el canvas'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del tablero',
+    example: '65f1b2c3d4e5f6a7b8c9d0e1'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tablero con post-its para canvas',
+    schema: {
+      type: 'object',
+      properties: {
+        board: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+            description: { type: 'string' },
+            owner: { type: 'object' },
+            sharedWith: { type: 'array' }
+          }
+        },
+        postits: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              text: { type: 'string' },
+              x: { type: 'number' },
+              y: { type: 'number' },
+              width: { type: 'number' },
+              height: { type: 'number' },
+              color: { type: 'string' },
+              zIndex: { type: 'number' }
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Tablero no encontrado' })
+  @ApiResponse({ status: 403, description: 'Sin acceso al tablero' })
+  async getBoardWithPostits(@Param('id') id: string, @Request() req) {
+    return this.boardsService.getBoardWithPostits(id, req.user.userId);
+  }
+
   @Put(':id')
   @ApiOperation({
     summary: 'Actualizar un tablero',

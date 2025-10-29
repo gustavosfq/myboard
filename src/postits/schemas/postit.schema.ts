@@ -8,7 +8,7 @@ export class Postit {
   @Prop({ type: Types.ObjectId, ref: 'Board', required: true })
   boardId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   text: string;
 
   @Prop({ required: true })

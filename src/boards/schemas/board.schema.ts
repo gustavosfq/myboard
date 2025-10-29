@@ -19,6 +19,21 @@ export class Board {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ default: false })
+  backgroundColor: string;
+
+  @Prop({ default: false })
+  canvasWidth: number;
+
+  @Prop({ default: false })
+  canvasHeight: number;
+
+  @Prop({ default: false })
+  showGrid: boolean;
+  
+  @Prop({ default: false })
+  gridSize: number;
 }
 
 export const BoardSchema = SchemaFactory.createForClass(Board);

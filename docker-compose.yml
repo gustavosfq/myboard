@@ -25,6 +25,7 @@ services:
     restart: always
     ports:
       - '3001:3001'
+      - '9229:9229'
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -42,7 +43,7 @@ services:
       - /app/node_modules
     networks:
       - myboard-network
-    command: npm run start:prod
+    command: npm run start:debug
 
 volumes:
   mongodb_data:

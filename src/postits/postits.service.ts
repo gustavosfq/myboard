@@ -88,7 +88,9 @@ export class PostitsService {
 
     Object.assign(postit, updatePostitDto);
     postit.lastModifiedBy = new Types.ObjectId(userId);
-    return postit.save();
+    await postit.save();
+    await postit.populate('createdBy', 'name email picture');
+    return postit;
   }
 
   async delete(id: string, userId: string): Promise<void> {
